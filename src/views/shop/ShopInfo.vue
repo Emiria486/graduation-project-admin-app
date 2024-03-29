@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:38:51
+ * @LastEditTime: 2024-03-29 17:38:47
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\shop\ShopInfo.vue
+ * @Description: 通过API接口测试
+-->
 <template>
   <div class="shopInfo">
     <el-card>
@@ -29,6 +37,7 @@
 <script>
 import { updateAdminInfo } from "@/service/admin-info";
 export default {
+  inject: ["admin"],
   data() {
     return {
       form: {
@@ -42,7 +51,13 @@ export default {
   },
   async mounted() {
     const { admin } = this;
-    this.form = admin;
+    console.log("shopeInfo的admin",admin)
+    // this.form = admin;
+    this.form.shop_name=admin.shop_name
+    this.form.phone=admin.phone
+    this.form.address=admin.address
+    this.form.email=admin.email
+    this.form.username=admin.username
   },
   methods: {
     resetForm() {

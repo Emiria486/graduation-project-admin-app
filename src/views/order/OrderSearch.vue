@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:38:24
+ * @LastEditTime: 2024-03-29 12:41:21
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\order\OrderSearch.vue
+ * @Description: api接口测试通过
+-->
 <template>
   <div class="orderSearch">
     <div class="date-search">
@@ -5,13 +13,12 @@
       <el-date-picker
         id="date-picker"
         v-model="searchDate"
-        type="month"
-        format="yyyy-MM-DD"
-        value-format="yyyy-MM-DD"
-        placeholder="选择日期"
-      >
-      </el-date-picker>
-      <el-button type="primary" @click="searchOrder">搜索</el-button>
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+      />
+      <el-button type="primary" @click="submitSearch">搜索</el-button>
     </div>
     <el-card class="order-container">
       <div slot="header">{{ date }} 订单</div>
@@ -58,22 +65,22 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
-                  v-for="(detail, index) in scope.row.details"
-                  :key="index"
+                  v-for="detail in scope.row.details"
+                  :key="detail.order_id"
                 >
-                  <span class="detail-name"> {{ detail.food_name }} </span
+                  <span class="detail-name">{{ detail.food.food_name }} </span
                   >&nbsp;
                   <span class="detail-number">
-                    {{ detail.number | numberFormat }}
+                    {{ detail.food.number | numberFormat }}
                   </span>
                   <span class="el-dropdown-item-detail-price">
-                    {{ detail.price | priceFormat }}
+                    {{ detail.food.price | priceFormat }}
                   </span>
                 </el-dropdown-item>
                 <el-dropdown-item>
                   <span> 合计：</span>
                   <span class="el-dropdown-item-detail-total">
-                    {{ scope.row.total | priceFormat }}
+                    {{ scope.row.total }}
                   </span>
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -84,18 +91,19 @@
       </el-table>
     </el-card>
     <el-pagination
-      background
-      hide-on-single-page
-      layout="prev, pager, next"
-      :pager-count="5"
+      layout="sizes, prev, pager, next"
       :total="tableTotal"
+      :page-sizes="[10, 20, 30, 40]"
       :page-size="pageSize"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page.sync="pageStart"
     >
     </el-pagination>
   </div>
 </template>
 <script>
-import { dateFormat } from "@/utils/format";
+import { getdateFormatToday, dateFormat } from "@/utils/format";
 import { getOrdersByDateAndPagination } from "@/service/order";
 export default {
   name: "OrderSearch",
@@ -109,7 +117,7 @@ export default {
       return "x" + val;
     },
     priceFormat(val) {
-      return "￥" + val.toFixed(2);
+      return "￥" + parseFloat(val).toFixed(2);
     },
   },
   data() {
@@ -119,13 +127,16 @@ export default {
       tableTotal: 0,
       pageSize: 10,
       pageStart: 1,
-      searchDate: "",
+      searchDate: [
+        getdateFormatToday("2024-01-01"),
+        getdateFormatToday(new Date()),
+      ],
     };
   },
   async created() {
-    const { orders, users, orderFoods, count } = (await this.searchOrder())
-      .data;
-    orders.foreach((order) => {
+    let { orders, users, orderFoods, count } = (await this.searchOrder()).data;
+    console.log("得到的orders", orders);
+    orders.forEach((order) => {
       const user = users.find((item) => item.user_id === order.user_id);
       const obj = {
         id: order.order_id,
@@ -135,37 +146,20 @@ export default {
         name: user.username,
         phone: user.phone,
         status: this.transformOrderStatus(order.status),
-        details: orderFoods.find((item) => item.order_id === order.order_id)
-          .food,
+        details: orderFoods.filter((item) => item.order_id === order.order_id),
         total: order.price,
       };
       this.tableData.push(obj);
     });
     this.tableTotal = count;
-    console.log("订单总数", count);
+    console.log("tableDate", this.tableData);
   },
   methods: {
+    // 页面加载函数
     async searchOrder() {
-      const searchDate = this.searchDate;
-      let date = null;
-      let startTime, endTime, currentMonth;
-      if (searchDate) {
-        date = new Date(searchDate);
-      } else {
-        const time = new Date();
-        const year = time.getFullYear();
-        const month = time.getMonth() + 1;
-        date = new Date(`${year}-${month}`);
-      }
-      startTime = date.getTime();
-      currentMonth = date.getMonth() + 1;
-      if (currentMonth === 12) {
-        endTime = new Date(`${date.getFullYear() + 1}-01`).getTime();
-      } else {
-        endTime = new Date(
-          `${date.getFullYear()}-${currentMonth + 1}`
-        ).getTime();
-      }
+      let searchDate = this.searchDate;
+      let startTime = getdateFormatToday(searchDate[0]);
+      let endTime = getdateFormatToday(searchDate[1]);
       return await getOrdersByDateAndPagination({
         startTime,
         endTime,
@@ -173,6 +167,31 @@ export default {
         pageSize: this.pageSize,
       });
     },
+    // 点击搜索按钮函数
+    async submitSearch() {
+      let { orders, users, orderFoods, count } = (await this.searchOrder())
+        .data;
+      this.tableData = [];
+      orders.forEach((order) => {
+        const user = users.find((item) => item.user_id === order.user_id);
+        const obj = {
+          id: order.order_id,
+          create_time: dateFormat(order.create_time),
+          address: order.address,
+          type: this.transformOrderType(order.order_type),
+          name: user.username,
+          phone: user.phone,
+          status: this.transformOrderStatus(order.status),
+          details: orderFoods.filter(
+            (item) => item.order_id === order.order_id
+          ),
+          total: order.price,
+        };
+        this.tableData.push(obj);
+      });
+      this.tableTotal = count;
+    },
+    // 定采类型转换函数
     transformOrderType(value) {
       switch (value) {
         case 1:
@@ -183,6 +202,7 @@ export default {
           return "外卖";
       }
     },
+    // 状态转换函数
     transformOrderStatus(value) {
       switch (value) {
         case 0:
@@ -190,6 +210,12 @@ export default {
         case 1:
           return "已处理";
       }
+    },
+    handleSizeChange(val) {
+      this.pageSize = val;
+    },
+    handleCurrentChange(val) {
+      this.pageStart = val;
     },
   },
 };

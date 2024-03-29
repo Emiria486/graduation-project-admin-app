@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:38:09
+ * @LastEditTime: 2024-03-29 12:41:47
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\order\OrderDeal.vue
+ * @Description: api接口测试通过（websocket未测试）
+-->
 <template>
   <div class="orderDeal" v-if="show">
     <template v-if="orders.length">
@@ -5,7 +13,7 @@
         class="order-item anim-up"
         shadow="hover"
         v-for="(item, index) in orders"
-        :key="index"
+        :key="item"
       >
         <div slot="header" class="order-title">
           <span class="order-number"
@@ -20,7 +28,7 @@
           <div class="order-info-base">
             <div class="item">
               <i class="el-icon-user-solid"></i>
-              收货人：{{ item.userInfo.name }}
+              收货人：{{ item.userInfo.username }}
             </div>
             <div class="item">
               <i class="el-icon-phone"></i>
@@ -29,6 +37,10 @@
             <div class="item">
               <i class="el-icon-location"></i>
               收货地址：{{ item.userInfo.address }}
+            </div>
+            <div class="item">
+              <i class="flag-o"></i>
+              就餐形式：{{ transformOrderType(item.userOrder.order_type) }}
             </div>
           </div>
         </div>
@@ -39,10 +51,7 @@
           <el-dropdown :hide-on-click="false">
             <span class="details">明细<i class="el-icon-arrow-up"></i></span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="(food, index) in item.foods"
-                :key="index"
-              >
+              <el-dropdown-item v-for="food in item.foods" :key="food">
                 <span class="el-dropdown-item-detail-name">
                   {{ food.food_name }}
                 </span>
@@ -63,15 +72,21 @@
               <el-dropdown-item>
                 <span>包装费</span>
                 <span class="el-dropdown-item-detail-price">
-                  {{ item.userOrder.order_type | priceFormat }}
+                  {{ (item.userOrder.order_type - 1) | priceFormat }}
                 </span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-          <el-button type="primary" size="small" @click="accept(index, item.id)"
+          <el-button
+            type="primary"
+            size="small"
+            @click="accept(index, item.userOrder.order_id)"
             >接单</el-button
           >
-          <el-button type="warning" size="small" @click="reject(index, item.id)"
+          <el-button
+            type="warning"
+            size="small"
+            @click="reject(index, item.userOrder.order_id)"
             >拒绝</el-button
           >
         </div>
@@ -101,6 +116,16 @@ export default {
     },
   },
   methods: {
+    transformOrderType(value) {
+      switch (value) {
+        case 1:
+          return "堂食";
+        case 2:
+          return "打包";
+        case 3:
+          return "外卖";
+      }
+    },
     accept(index, id) {
       this.localOrders.splice(index, 1);
       console.log("accept接收订单id", id);
@@ -116,7 +141,7 @@ export default {
       return "x" + val;
     },
     priceFormat(val) {
-      return "￥" + val.toFixed(2);
+      return "￥" + parseFloat(val).toFixed(2);
     },
     timeFormat(val) {
       const date = new Date(val);

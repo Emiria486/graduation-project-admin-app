@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:35:19
+ * @LastEditTime: 2024-03-29 17:39:29
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\food\AddFood.vue
+ * @Description: 未通过api测试
+-->
 <template>
   <el-card class="addFood">
     <div slot="header">
@@ -17,7 +25,7 @@
           <el-option
             v-for="status in FoodStatus"
             :key="status"
-            :label="status"
+            :label="`${status ? '可以' : '不可以'}销售`"
             :value="status"
           >
           </el-option>
@@ -81,12 +89,13 @@ export default {
     };
     return {
       FoodStatus: [0, 1],
-      uploadServer: `${API_BASE_URL}/foodImage_upload`,
+      uploadServer: `${API_BASE_URL}/food`,
       form: {
         food_name: "",
         status: 1,
         price: 0,
         description: "",
+        isdelete: 0,
       },
       rules: {
         price: [{ validator: validatePrice, trigger: "blur" }],
@@ -97,24 +106,38 @@ export default {
   },
   computed: {
     headers() {
-      return { authorization: "Bearer " + localStorage.getItem("adminToken") };
+      return {
+        authorization: "Bearer " + localStorage.getItem("adminToken"),
+        // "Content-Type": "multipart/form-data",
+      };
     },
   },
   methods: {
     async addFoodMenu(param) {
       const formData = new FormData();
-      formData.append("file", param.file);
-      Object.entries(this.form).forEach((field) => {
-        formData.append(field[0], field[1]);
-      });
-      console.log("addFoodMenu上传参数", formData);
+      formData.append(
+        "food",
+        JSON.stringify({
+          food_name: this.form.food_name,
+          price: this.form.price,
+          status: this.form.status,
+          description: this.form.description,
+          isdelete: this.form.isdelete,
+        })
+      );
+      formData.append("files", param.file);
+      console.log("addFoodMenu上传food参数", formData.getItem("food"));
+      console.log("addFoodMenu上传图片参数", formData.getItem("files"));
+
       const res = await addNewFoodToMenu(formData);
+
       if (res.status) {
         this.$myMsg.notify({
           content: "菜品信息已添加",
           type: "success",
         });
       }
+      return false;
     },
     onSubmit() {
       this.$refs["form"].validate((valid) => {

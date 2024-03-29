@@ -1,7 +1,7 @@
 /*
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-22 21:17:15
- * @LastEditTime: 2024-03-22 21:47:05
+ * @LastEditTime: 2024-03-25 22:48:04
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\service\index.js
  * @Description: axios基础配置文件
@@ -31,7 +31,8 @@ export function axiosInstance(config, isLoading = true) {
         }
         const token = localStorage.getItem("adminToken")
         if (token) {
-            config.headers.authorization = 'Bearer ' + token
+            config.headers.authorization = `Bearer ${token}`
+            console.log("拦截器的token", config.headers.authorization)
         }
         return config
     })

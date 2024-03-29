@@ -54,6 +54,7 @@
 <script>
 import { btnLoading, btnLoadingClose } from "@/utils/loading";
 import { login } from "@/service/login";
+import AESHelper from '@/utils/AESHelper';
 export default {
   name: "LoginPage",
   data() {
@@ -96,7 +97,7 @@ export default {
           btnLoading(this.button.login);
           const res = await login({
             username: this.ruleForm.username,
-            password: this.ruleForm.pass,
+            password: AESHelper.encrypt(this.ruleForm.pass),
           });
           if (res.status) {
             this.$myMsg.notify({

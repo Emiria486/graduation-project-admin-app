@@ -12,13 +12,13 @@
         <el-badge :is-dot="true">
           <i class="el-icon-bell"></i>
         </el-badge>
-        <el-dropdown trigger="click">
+        <el-dropdown trigger="click" @command="handleCommand">
           <el-avatar :src="admin.avatar" :size="45"></el-avatar>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>退出账号</el-dropdown-item>
+            <el-dropdown-item command="outLogin">退出账号</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <span class="username">liuyongjie</span>
+        <span class="username">{{ this.admin.username }}</span>
       </div>
     </div>
     <el-container>
@@ -107,7 +107,7 @@ export default {
     return {
       socket: null,
       orders: [],
-      menu_active: this.$route.path,
+      menu_active: this.$router.path,
     };
   },
   async mounted() {
@@ -122,6 +122,8 @@ export default {
     admin.email = res.data.email;
     admin.address = res.data.address;
     admin.shop_name = res.data.shop_name;
+
+    console.log("index.vue的admin",res)
 
     //获取未处理订单
     this.orders = (await getOutstandingOrders()).data;
@@ -145,6 +147,15 @@ export default {
     });
   },
   methods: {
+    // 下拉框退出登录
+    handleCommand(command) {
+      if (command === "outLogin") {
+        // 清除token
+        localStorage.removeItem("adminToken");
+        // 返回登录页
+        this.$router.push("/login");
+      }
+    },
     warningMsg() {
       this.$myMsg.notify({
         content: "功能尚未开放，敬请期待！",

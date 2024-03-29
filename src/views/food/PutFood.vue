@@ -1,8 +1,25 @@
 <template>
   <div class="putFood">
-    <el-card class="food-original">
+    <el-card id="headerCard" :body-style="{ display: 'block' }">
       <div slot="header" class="clearfix">
         <span>现有菜单</span>
+      </div>
+      <div class="table-tools">
+        <label for="date-put" class="label">上架时间：</label>
+        <el-select v-model="date" placeholder="请选择">
+          <el-option
+            v-for="item in weekOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+        <label for="foodNum" class="label">数量：</label>
+        <el-input id="foodNum" v-model="foodNum"></el-input>
+        <el-button type="primary" size="medium" @click="foodPutOn"
+          >上架</el-button
+        >
       </div>
       <el-table
         stripe
@@ -14,15 +31,17 @@
       >
         <el-table-column
           type="selection"
-          header-align="left"
-          align="left"
           prop="prop"
           label="label"
         ></el-table-column>
         <el-table-column label="菜名" prop="food_name"></el-table-column>
-        <el-table-column label="是否在售" prop="status"></el-table-column>
+        <el-table-column label="在售">
+          <template slot-scope="scope">
+            {{ scope.row.status ? "在售" : "不在售" }}
+          </template>
+        </el-table-column>
         <el-table-column label="价格（元）" prop="price"></el-table-column>
-        <el-table-column align="right">
+        <el-table-column>
           <template slot="header">
             <el-input
               v-model="searchValue"
@@ -47,26 +66,6 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="table-tools">
-        <label for="date-put" class="label">上架时间：</label>
-        <el-date-picker
-          id="date-put"
-          v-model="date"
-          type="datetime"
-          placeholder="选择日期"
-          size="medium"
-          format="yyyy-MM-dd"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          default-time="08:00:00"
-          :clearable="false"
-        >
-        </el-date-picker>
-        <label for="foodNum" class="label">数量：</label>
-        <el-input id="foodNum" v-model="foodNum"></el-input>
-        <el-button type="primary" size="medium" @click="foodPutOn"
-          >上架</el-button
-        >
-      </div>
     </el-card>
 
     <el-card class="food-put">
@@ -87,7 +86,11 @@
           sortable
         ></el-table-column>
         <el-table-column label="菜名" prop="food_name"></el-table-column>
-        <el-table-column label="是否在售" prop="status"></el-table-column>
+        <el-table-column label="是否在售">
+          <template slot-scope="scope">
+            {{ scope.row.status ? "在售" : "不在售" }}
+          </template>
+        </el-table-column>
         <el-table-column label="价格（元）" prop="price"></el-table-column>
         <el-table-column label="数量" prop="number"></el-table-column>
         <el-table-column align="right">
@@ -121,7 +124,7 @@
         <el-form-item label="价格：" label-width="70px">
           <el-input v-model="form.price" placeholder="单位：元"></el-input>
         </el-form-item>
-        <el-form-item label="菜品描述：" label-width="70px">
+        <el-form-item label="菜品描述：" label-width="90px">
           <el-input
             v-model="form.description"
             placeholder="输入修改后的菜品描述"
@@ -129,7 +132,7 @@
             :rows="3"
           ></el-input>
         </el-form-item>
-        <el-form-item label="是否在售：" label-width="70px">
+        <el-form-item label="是否在售：" label-width="90px">
           <el-select v-model="form.status" placeholder="请选择">
             <el-option
               v-for="status in FoodStatus"
@@ -231,6 +234,15 @@ export default {
       }
     };
     return {
+      weekOptions: [
+        { value: "周一", label: "周一" },
+        { value: "周二", label: "周二" },
+        { value: "周三", label: "周三" },
+        { value: "周四", label: "周四" },
+        { value: "周五", label: "周五" },
+        { value: "周六", label: "周六" },
+        { value: "周日", label: "周日" },
+      ],
       date: "",
       foodNum: 0,
       searchValue: "",
@@ -257,11 +269,20 @@ export default {
     };
   },
   computed: {
+    // 过滤现有菜单列表数据
     tableData() {
-      return this.foodOriginal.filter((date) => {
-        !this.searchValue ||
-          date.food_name.toLowerCase().includes(this.searchValue.toLowerCase());
-      });
+      if (this.searchValue !== "") {
+        console.log("searchValue", this.searchValue);
+        return this.foodOriginal.filter((food) => {
+          return Object.keys(food).some((key) => {
+            return (
+              String(food[key]).toLowerCase().indexOf(this.searchValue) > -1
+            );
+          });
+        });
+      } else {
+        return this.foodOriginal;
+      }
     },
   },
   watch: {
@@ -275,7 +296,9 @@ export default {
   },
   async created() {
     this.foodOriginal = (await getFood()).data;
-    this.foodPut = (await getFoodMenu()).data;
+    this.foodPut = (await getFoodMenu({ date: getWeekday("2024-03-25") })).data;
+    console.log("foodOriginal", this.foodOriginal);
+    console.log("foodPut", this.foodPut);
   },
   methods: {
     handleDialogClose(formName) {
@@ -292,6 +315,7 @@ export default {
       this.dialogPutOff.date = row.date;
       this.dialogPutOff.food_menu_id = row.food_menu_id;
     },
+    // 更改上架菜品供应数量（api测试成功）
     handleEditNum(row) {
       this.dialogModifyNum.visible = true;
       this.dialogModifyNum.name = row.food_name;
@@ -311,10 +335,12 @@ export default {
     handleSelection(val) {
       this.multipleSelection = val;
     },
-    // 发起api请求
+    // 删除指定菜品的（已通过api测试）
     async foodDelete() {
-      // 发起删除请求
-      const res = await deleteFood({ food_id: this.dialogDelete.food_id });
+      const res = await deleteFood({
+        food_id: this.dialogDelete.food_id,
+        isdelete: 1,
+      });
       if (res.status) {
         // 浏览器本地删除
         this.foodOriginal = this.foodOriginal.filter(
@@ -329,6 +355,7 @@ export default {
         this.dialogDelete.visible = false;
       }
     },
+    // 从菜单中下架指定菜品（已api测试通过）
     async foodPutOff() {
       const res = await deleteFoodMenu({
         food_menu_id: this.dialogPutOff.food_menu_id,
@@ -344,6 +371,7 @@ export default {
         this.dialogPutOff.visible = false;
       }
     },
+    // 上架菜品到菜单(已api测试通过)
     async foodPutOn() {
       let date = this.date;
       if (!this.multipleSelection.length) {
@@ -357,13 +385,13 @@ export default {
           type: "error",
         });
       } else {
-        date = getWeekday(date);
         let number = this.foodNum * 1;
         //返回food_id数组，用以提交
         const foods_id = [];
         this.multipleSelection.forEach((item) => {
           foods_id.push(item.food_id);
         });
+        console.log("addFoodMenu", date, number, foods_id);
         const res = await addFoodMenu({
           date,
           number,
@@ -371,7 +399,7 @@ export default {
         });
         //数据回显
         if (res.status) {
-          this.foodPut = (await getFoodMenu()).data;
+          this.foodPut = (await getFoodMenu({ date: this.date })).data;
           // 清除表单域
           this.foodNum = "";
           this.date = "";
@@ -437,8 +465,9 @@ export default {
 @elMarginTop: 30px;
 @elWidth: 90%;
 .putFood {
-  .el-card__body {
-    flex-direction: column;
+  display: block;
+  #headerCard {
+    display: block !important;
   }
   .food-modify {
     padding: 0 40px;
@@ -454,10 +483,11 @@ export default {
     margin: @elMarginTop auto 0;
     min-height: 400px;
     overflow-y: auto;
+    display: block;
   }
   .table-tools {
     font-family: myFont3;
-    margin: 30px 0 15px 0;
+    margin: 0 auto;
     .label {
       font-size: 14px;
       color: #999;
@@ -477,6 +507,7 @@ export default {
   .food-original-table {
     max-height: 400px;
     overflow-y: auto;
+    display: block;
     &::-webkit-scrollbar {
       display: none;
     }
