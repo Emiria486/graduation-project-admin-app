@@ -74,10 +74,18 @@
               </el-select>
             </div>
             <div class="button-expend">
-              <el-button type="primary" size="medium" class="increase"
+              <el-button
+                type="primary"
+                size="medium"
+                class="increase"
+                @click="increase"
                 >添加</el-button
               >
-              <el-button type="warning" size="medium" class="reduce"
+              <el-button
+                type="warning"
+                size="medium"
+                class="reduce"
+                @click="reduce"
                 >减少</el-button
               >
             </div>
@@ -120,7 +128,7 @@ export default {
     };
     return {
       date: "",
-      expendValue: "",
+      expendValue: 0,
       expendType: "",
       expendPie: [
         { value: 5000, name: "员工工资" },
@@ -137,6 +145,14 @@ export default {
     lastMonth() {
       this.$refs["lines"].repaint();
       this.$refs["pie"].repaint();
+    },
+    increase() {
+      this.expendPie[this.expendType] =
+        this.expendPie[this.expendType] + this.expendValue;
+    },
+    reduce() {
+      this.expendPie[this.expendType] =
+        this.expendPie[this.expendType] - this.expendValue;
     },
   },
 };

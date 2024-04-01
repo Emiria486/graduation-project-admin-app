@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:38:40
+ * @LastEditTime: 2024-04-01 13:08:56
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\shop\ShopAvatar.vue
+ * @Description: 修改管理员用户头像（已通过api测试）
+-->
 <template>
   <div class="shopAvatar">
     <el-card>

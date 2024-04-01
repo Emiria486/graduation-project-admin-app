@@ -1,7 +1,7 @@
 <!--
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-22 22:38:09
- * @LastEditTime: 2024-03-29 12:41:47
+ * @LastEditTime: 2024-04-01 13:31:29
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\views\order\OrderDeal.vue
  * @Description: api接口测试通过（websocket未测试）
@@ -253,11 +253,6 @@ export default {
   @media screen and (min-width: 1380px) {
     .el-card {
       height: @cardH;
-    }
-    .buttonGroup {
-      position: absolute;
-      bottom: 10px;
-      right: @el-card__body_padding;
     }
   }
 }

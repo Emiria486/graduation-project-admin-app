@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 22:35:27
+ * @LastEditTime: 2024-04-01 14:30:44
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\food\PutFood.vue
+ * @Description: 对菜品，菜单的修改（已通过api测试）
+-->
 <template>
   <div class="putFood">
     <el-card id="headerCard" :body-style="{ display: 'block' }">
@@ -35,6 +43,16 @@
           label="label"
         ></el-table-column>
         <el-table-column label="菜名" prop="food_name"></el-table-column>
+        <el-table-column label="菜品图片">
+          <template slot-scope="scope">
+            <el-image
+              style="width: 100px; height: 100px"
+              :src="scope.row.image"
+              :fit="contain"
+            >
+            </el-image>
+          </template>
+        </el-table-column>
         <el-table-column label="在售">
           <template slot-scope="scope">
             {{ scope.row.status ? "在售" : "不在售" }}
@@ -137,7 +155,7 @@
             <el-option
               v-for="status in FoodStatus"
               :key="status"
-              :label="status"
+              :label="status ? '在售' : '不在售'"
               :value="status"
             ></el-option>
           </el-select>
@@ -296,7 +314,7 @@ export default {
   },
   async created() {
     this.foodOriginal = (await getFood()).data;
-    this.foodPut = (await getFoodMenu({ date: getWeekday("2024-03-25") })).data;
+    this.foodPut = (await getFoodMenu({ date: getWeekday(new Date()) })).data;
     console.log("foodOriginal", this.foodOriginal);
     console.log("foodPut", this.foodPut);
   },
@@ -365,7 +383,7 @@ export default {
           (item) => item.food_menu_id !== this.dialogPutOff.food_menu_id
         );
         this.$myMsg.notify({
-          content: "菜单已已下架",
+          content: "菜单已下架",
           type: "success",
         });
         this.dialogPutOff.visible = false;
@@ -413,6 +431,7 @@ export default {
         }
       }
     },
+    // 调整单个菜品信息
     async foodInfoModify() {
       // 发起请求
       const res = await updateFoodInfo({
@@ -420,19 +439,26 @@ export default {
         food_name: this.form.food_name,
         status: this.form.status,
         price: this.form.price,
+        image: this.foodOriginal.find(
+          (food) => food.food_id === this.dialogModifyInfo.food_id
+        ).image,
         description: this.form.description,
+        isdelete: this.foodOriginal.find(
+          (food) => food.food_id === this.dialogModifyInfo.food_id
+        ).isdelete,
       });
       if (res.status) {
         //前端处理回显，可省去http请求
         this.foodOriginal.forEach((item) => {
-          if (item.food_name === this.dialogModifyInfo.name) {
+          if (item.food_id === this.dialogModifyInfo.food_id) {
             item.food_name = this.form.food_name;
-            item.type = this.form.status;
+            item.status = this.form.status;
             item.price = this.form.price;
+            item.description = this.form.description;
           }
         });
         this.$myMsg.notify({
-          content: "菜单修改修改成功!",
+          content: "菜单修改成功!",
           type: "success",
         });
         // 关闭弹出层
@@ -465,6 +491,9 @@ export default {
 @elMarginTop: 30px;
 @elWidth: 90%;
 .putFood {
+  ::before {
+    height: 0px;
+  }
   display: block;
   #headerCard {
     display: block !important;

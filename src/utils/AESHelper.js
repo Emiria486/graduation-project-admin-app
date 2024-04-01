@@ -1,15 +1,14 @@
 /*
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-25 17:28:59
- * @LastEditTime: 2024-03-29 09:11:24
+ * @LastEditTime: 2024-03-31 20:41:12
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\utils\AESHelper.js
  * @Description: AES加密模块
  */
 var CryptoJS = require("crypto-js");
 
-export default
-class AESHelper {
+export default class AESHelper {
     static privateKey = 'liuyongjie'
     /**
      * Description AES加密函数

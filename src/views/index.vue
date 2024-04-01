@@ -1,3 +1,11 @@
+<!--
+ * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @Date: 2024-03-22 19:51:36
+ * @LastEditTime: 2024-04-01 13:18:28
+ * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
+ * @FilePath: \admin-app\src\views\index.vue
+ * @Description: （首页汇总）已通过api测试和websocket测试
+-->
 <template>
   <div class="index">
     <div class="header">
@@ -133,17 +141,6 @@ export default {
     //websocket
     this.socket = orderSocket({
       username: admin.username,
-    });
-    this.socket.addEventListener("message", (e) => {
-      const res = JSON.parse(e.data);
-      this.orders.push(res.data);
-      console.log(res.data);
-      if (!res.status) {
-        this.$myMsg.notify({
-          content: "服务器可能已崩溃",
-          type: "error",
-        });
-      }
     });
   },
   methods: {
