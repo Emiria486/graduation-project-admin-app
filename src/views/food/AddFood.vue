@@ -1,10 +1,10 @@
 <!--
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-22 22:35:19
- * @LastEditTime: 2024-03-29 17:39:29
+ * @LastEditTime: 2024-04-02 12:59:33
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\views\food\AddFood.vue
- * @Description: 未通过api测试
+ * @Description: 添加新菜品页面（已通过api测试）
 -->
 <template>
   <el-card class="addFood">
@@ -56,12 +56,9 @@
       </div>
       <el-upload
         ref="upload"
-        list-type="picture-card"
-        :limit="1"
         :auto-upload="false"
-        :headers="headers"
-        :action="uploadServer"
-        :file-list="fileList"
+        action="xxx"
+        list-type="picture-card"
         :http-request="addFoodMenu"
         :on-exceed="handleExceed"
         :on-change="handleChange"
@@ -69,7 +66,7 @@
       >
         <i class="el-icon-plus"></i>
       </el-upload>
-      <div class="tip">图片大小640*640极佳，目前最多上传1张图片</div>
+      <div class="tip">图片大小640*640极佳,目前最多上传1张图片</div>
     </div>
   </el-card>
 </template>
@@ -100,7 +97,7 @@ export default {
       rules: {
         price: [{ validator: validatePrice, trigger: "blur" }],
       },
-      fileList: [],
+      uploadFile: [],
       fileStatus: true,
     };
   },
@@ -108,13 +105,14 @@ export default {
     headers() {
       return {
         authorization: "Bearer " + localStorage.getItem("adminToken"),
-        // "Content-Type": "multipart/form-data",
+        "Content-Type": "multipart/form-data",
       };
     },
   },
   methods: {
-    async addFoodMenu(param) {
-      const formData = new FormData();
+    async addFoodMenu() {
+      console.log("提交图片函数执行");
+      let formData = new FormData();
       formData.append(
         "food",
         JSON.stringify({
@@ -125,10 +123,11 @@ export default {
           isdelete: this.form.isdelete,
         })
       );
-      formData.append("files", param.file);
-      console.log("addFoodMenu上传food参数", formData.getItem("food"));
-      console.log("addFoodMenu上传图片参数", formData.getItem("files"));
-
+      formData.append("file", this.$refs.upload.uploadFiles[0].raw);
+      console.log("直接获取的图片", this.$refs.upload.uploadFiles[0].raw);
+      console.log("addFoodMenu上传food参数", formData.get("food"));
+      console.log("addFoodMenu上传图片参数", formData.get("file"));
+      console.log("formData", formData);
       const res = await addNewFoodToMenu(formData);
 
       if (res.status) {
@@ -141,13 +140,16 @@ export default {
     },
     onSubmit() {
       this.$refs["form"].validate((valid) => {
-        if (valid && this.fileList.length) {
+        console.log("onsubmit", valid);
+        if (valid && this.uploadFile.length) {
+          console.log("2 if", valid, this.uploadFile.length);
           if (!this.fileStatus) {
             this.$myMsg.notify({
               content: "上传之前请先处理好错误的图片格式！",
               type: "error",
             });
           } else {
+            console.log("触发提交图片");
             this.$refs["upload"].submit();
           }
         } else {
@@ -170,9 +172,11 @@ export default {
       });
     },
 
-    handleChange(file, fileList) {
-      this.fileList = fileList;
-
+    handleChange(file) {
+      if (file) {
+        let image = URL.createObjectURL(file.raw);
+        this.uploadFile.push(image);
+      }
       const isIMAGE =
         file.raw.type === "image/jpeg" ||
         file.raw.type === "image/jpg" ||
@@ -194,7 +198,7 @@ export default {
       this.fileStatus = isIMAGE && isLt2M;
     },
     handleRemove(file, fileList) {
-      this.fileList = fileList;
+      this.uploadFile = fileList;
     },
   },
 };
