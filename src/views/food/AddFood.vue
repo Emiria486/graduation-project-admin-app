@@ -1,7 +1,7 @@
 <!--
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-22 22:35:19
- * @LastEditTime: 2024-04-02 12:59:33
+ * @LastEditTime: 2024-04-02 15:17:27
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\views\food\AddFood.vue
  * @Description: 添加新菜品页面（已通过api测试）
@@ -38,7 +38,7 @@
         <el-input
           v-model="form.description"
           type="textarea"
-          placeholder="菜品描述。（建议填写原材料，配料，制作流程等）"
+          placeholder="菜品描述。（请按照原材料介绍：xxx,制作工艺：xxx,推荐词：xxx的格式完成输入，错误的格式会让用户界面显示信息不全）"
           :rows="3"
         ></el-input>
       </el-form-item>
