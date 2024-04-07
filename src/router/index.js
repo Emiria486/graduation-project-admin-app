@@ -92,12 +92,11 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
     document.title = to.matched[0].meta.title;
-    next()
-    console.log(from, next)
-    // if (!localStorage.getItem('adminToken') && document.title !== '登录') {
-    //     next('/login')
-    // } else {
-    //     next();
-    // }
+    if (to.path === '/login') return next()
+    if (localStorage.getItem('adminToken')) {
+        next()
+    } else {
+        return next('/login')
+    }
 })
 export default router
