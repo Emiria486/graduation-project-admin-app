@@ -1,7 +1,7 @@
 /*
  * @Author: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @Date: 2024-03-22 21:17:15
- * @LastEditTime: 2024-03-25 22:48:04
+ * @LastEditTime: 2024-04-20 20:44:03
  * @LastEditors: Emiria486 87558503+Emiria486@users.noreply.github.com
  * @FilePath: \admin-app\src\service\index.js
  * @Description: axios基础配置文件
@@ -16,7 +16,10 @@ import {
 } from "@/utils/loading";
 import router from '../router'
 
-export const API_BASE_URL = "http://127.0.0.1:4396/lyj"
+export const API_BASE_URL = "http://localhost:4396/lyj"
+
+// export const API_BASE_URL = "http://18.143.101.100:4396/lyj"
+
 
 export function axiosInstance(config, isLoading = true) {
     let loading = null

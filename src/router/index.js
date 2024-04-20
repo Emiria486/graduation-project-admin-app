@@ -86,6 +86,7 @@ const routes = [{
     },
 ]
 const router = new VueRouter({
+    base:"/admin/",
     mode: 'history',
     routes
 })
